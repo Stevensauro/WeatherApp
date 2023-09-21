@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <script defer src="app.js" type="module"></script>
+</head>
+<body>
+    <div id="background" class='background-svg clearfix'>
+    </div>
+
+    <section id="weather-interface">
+        <div id="search-div">
+            <div class="search-box">
+                <input
+                    id="search-bar"
+                    type="search"
+                    placeholder="City's name"
+                    pattern="[A-z]"
+                >
+                <svg id='search-icon' xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                </svg>
+            </div>
+            <div id="list-div"></div>
+        </div>
+        <div id="forecast">
+            <div id="main">
+                <p id="time"></p>
+                <h2 id="place-name"></h2>
+                <aside>
+                    <p id="temp"></p>
+                    <p id="high"></p>
+                    <p id="low"></p>
+                    <img id="weather-img">
+                    <p id="weather-description"></p>
+                </aside>
+            </div>
+
+            <div id="hourly">
+            </div>
+        </div>
+    </section>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+<style>
+     @import url('https://fonts.googleapis.com/css2?family=Lexend+Mega:wght@100;400;700&family=Merriweather+Sans:ital,wght@0,300;0,500;0,700;1,300;1,500;1,700&display=swap');
+
+    :root{
+        --pageBckgrnd1: #50FFAF;
+        --weatherBckgrnd: #B5D2AD;
+        --listHoverColor: #BAFDA2;
+        --pageBckgrnd2: #5e79ff;
+        --pageBckgrnd2Bright: #43aaff;
+
+        --clouds-day: #7DF9FF;
+        --clouds-night: #9723C9;
+    }
+
+    *{
+        box-sizing: border-box;
+    }
+
+    body{
+        margin: 0;
+        background-color: var(--pageBckgrnd1);
+        overflow-x: hidden;
+    }
+    html, input{
+        font-family: 'Lexend Mega', sans-serif;
+    }
+
+    .background-svg{
+        position: absolute;
+        overflow: hidden;
+        width: 100%;
+        height: 120%;
+        z-index: -1;
+    }
+   
+    .background-svg div{
+        width: min-content;
+    }
+
+    .background-svg img{
+        right: 0;
+        top: 0;
+        width: 100px;
+    }
+
+    #weather-interface{
+        margin: 0 auto;
+        max-width: 500px;
+        min-height: 1200px;
+        background-color: var(--weatherBckgrnd); 
+        border: 4px solid black;
+        box-shadow: 5px 3px rgb(0,0,0);
+    }
+
+    ul,li,h1,h2,p,a{ margin: 0; padding: 0; }
+    
+    ul{ padding: 10px 0;}    
+    
+    li{ list-style: none; }
+    
+    a{ text-decoration: none; color: black;}
+
+    #search-div{
+        padding-top: 20px;
+        text-align: center;
+        width: 100%;
+    }
+
+    .search-box{
+        margin: auto;
+        position: relative;
+        min-width: 320px;
+        max-width: 400px;
+    }
+
+    #search-bar{
+        border-radius: 5px;
+        border: 4px solid black;
+        width: 100%;
+        padding: 11px;
+        box-shadow: 3px 3px rgb(0,0,0);
+    }
+
+    #search-bar:focus{
+        outline: none;
+    }
+
+    body #search-bar::-webkit-search-cancel-button{
+        margin: 0;
+        position: relative;
+        right: 30px;
+    }
+
+    #search-icon{
+        position: absolute;
+        top: 30%;
+        right: 5%;
+    } 
+
+    #list-div{
+        margin: auto;
+        width: 500px;
+        position: absolute;
+    }
+
+    #list-cities{
+        position: relative;
+        width: 400px;
+        margin: auto;
+        padding: 0;
+        z-index: 4;
+        margin-top: -2px;
+        transform: translateX(-2px);
+    }
+
+    #list-cities li{
+        border: 4px solid black;
+        border-top: none;
+    }
+    
+    #list-cities li:first-of-type{
+        border-top: 2px solid rgba(0, 0, 0, 0);
+    }
+
+    #list-cities li:last-of-type{border-radius: 0% 0% 5px 5px;}
+
+    #list-cities a{
+        display: block;
+        width: 100%;
+        padding: 10px 0;
+        font-weight: bold;
+        background-color: var(--weatherBckgrnd);
+    }
+
+    #list-cities a:hover{
+        background-color: var(--listHoverColor);
+    }
+
+    #main{
+        text-align: center;
+        margin: 50px 0;
+
+        border-top: 2px solid black;
+        border-bottom: 2px solid black;
+        background-color: var(--pageBckgrnd2);
+    }
+
+    #main #place-name{
+        margin-top: 25px;
+        font-size: 40px;
+        line-height: .95;
+        margin-bottom: 25px;
+    }
+
+    #main #place-name span:nth-of-type(3){
+        position: relative;
+        top: -8px;
+        font-size: 65%;
+    }
+
+    #main #time{
+        margin: 10px auto;
+        font-size: 35px;
+    }
+
+    #main #temp{
+        font-size: 65px;
+    }
+
+    #main aside{
+        border-top: 5px dashed black;
+        margin-top: 15px;
+        padding: 25px 0;
+        font-size: 35px;
+        background-color: var(--pageBckgrnd2Bright);
+    }
+
+    #main #weather-description{
+        text-decoration: underline;
+        font-size: 30px;
+    }
+
+    #hourly{
+        position: relative;
+        margin: auto;
+        width: 460px;
+        z-index: 3;
+    }
+
+    #cards{
+        display: flex;
+        overflow: hidden;
+        width: 100%;
+        height: 380px;
+        justify-content: flex-start;
+        gap: 58px;
+        scroll-behavior: smooth;
+    }
+
+    #hourly button{
+        position: absolute;
+        color: rgb(255, 0, 0);
+        background-color: rgba(1, 1, 1, 0);
+        top: 5%;
+        border: none;
+        width: 60px;
+        padding: 0;
+        height: 20%;
+        cursor: pointer;
+    }
+
+    #hourly button svg{
+        width: 100%;
+    }
+
+    #forecast h1{
+        text-align: center;
+    }
+
+    #forecast{
+        height: 100%;
+    }
+
+    .scrollLeft{
+        z-index: 2;
+        left: 0;
+    }
+
+    .scrollRight{
+        z-index: 2;
+        right: 0;
+        top: 0;
+    }
+
+    #cards{
+        position: absolute;
+        z-index: 1;
+    }
+
+    .card{
+        border: 4px dotted black;
+        padding: 5px;
+        border-radius: 5px;
+        background-color: var(--pageBckgrnd2Bright);
+        min-width: 90.5%;
+        height: 100%;
+    }
+
+    .card:first-of-type{
+        margin-left: 22px;
+    }
+
+    .card:last-of-type{
+        margin-right: 22px;
+    }
+
+    .card h1{
+        font-size: 35px;
+        margin-bottom: 15px;
+    }
+
+    .card p {
+        font-size: 20px;
+    }
+
+    .card p:nth-child(-n+4){
+        margin-bottom: 4px;
+    }
+
+    .weatherInfoCard{
+        display: flex;
+        height: 170px;
+    }
+
+    .weatherInfoCard img{
+        flex: 1;
+    }
+
+    .textRight{
+        float: right;
+
+    }
+
+    .weatherInfoCard aside{
+        padding-top: 25px;
+        flex: 2;
+    }
+
+    .weatherInfoCard p:first-of-type{
+        font-weight: bold;
+        margin: 8px 0;
+    }
+
+    .clearfix::after {
+        content: "";
+        clear: both;
+        display: table;
+    }
+</style>
+</html>
