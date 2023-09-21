@@ -482,7 +482,7 @@ function searchCity(e){ //Look for the possible locations that the user wants to
 }
 
 async function weatherLocation(usrLocation) {
-    const response = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${usrLocation}&limit=5&appid=de6c0474c79ad34ad40f709c9cd3d079`);
+    const response = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${usrLocation}&limit=5&appid=de6c0474c79ad34ad40f709c9cd3d079`);
     
     return await response.json();; 
 }
